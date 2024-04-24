@@ -1,0 +1,10 @@
+.main {
+  text-align: center;
+  padding: 2rem;
+  background-color: black;
+  color: white;
+}
+
+.token:hover {
+  cursor: pointer;
+}
