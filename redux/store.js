@@ -1,9 +1,9 @@
 import {configureStore} from '@reduxjs/toolkit';
-import  profileReducer from './reducers/profileSlice';
+import  sniperReducer from './reducers/sniperSlice';
 
 
 export default configureStore({
     reducer:{
-        profile: profileReducer
+        sniper: sniperReducer
     }
 })
