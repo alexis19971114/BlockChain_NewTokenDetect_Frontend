@@ -5,6 +5,8 @@ import { useSelector, useDispatch} from 'react-redux'
 import { useRouter } from 'next/router';
 import { SET_WORDS, SET_CONTRACTS, SET_ORDER } from '../../redux/reducers/sniperSlice'
 import { socket } from './socket'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSort } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip, notification, Input } from "antd";
 const { Search } = Input;
 
@@ -79,24 +81,46 @@ const Home = () => {
     newContracts = oldContracts.sort((a, b) => {
       switch(order.status) {
         case "created_at":
+          if (a.created_at === undefined && b.created_at === undefined) return 0;
+          if (a.created_at === undefined) return order.inc ? -1 : 1
+          if (b.created_at === undefined) return order.inc ? 1 : -1
           if (a.created_at > b.created_at) return order.inc ? 1 : -1
           if (a.created_at < b.created_at) return order.inc ? -1 : 1
           return 0
         case "updated_at":
+          if (a.updated_at === undefined && b.updated_at === undefined) return 0;
+          if (a.updated_at === undefined) return order.inc ? -1 : 1
+          if (b.updated_at === undefined) return order.inc ? 1 : -1
           if (a.updated_at > b.updated_at) return order.inc ? 1 : -1
           if (a.updated_at < b.updated_at) return order.inc ? -1 : 1
           return 0
         case "sniped":
+          if (a.firstBlockBuyCount === undefined && b.firstBlockBuyCount === undefined) return 0;
+          if (a.firstBlockBuyCount === undefined) return order.inc ? -1 : 1
+          if (b.firstBlockBuyCount === undefined) return order.inc ? 1 : -1
           if (a.firstBlockBuyCount > b.firstBlockBuyCount) return order.inc ? 1 : -1
           if (a.firstBlockBuyCount < b.firstBlockBuyCount) return order.inc ? -1 : 1
           return 0
         case "buy":
+          if (a.buyCount === undefined && b.buyCount === undefined) return 0;
+          if (a.buyCount === undefined) return order.inc ? -1 : 1
+          if (b.buyCount === undefined) return order.inc ? 1 : -1
           if (a.buyCount > b.buyCount) return order.inc ? 1 : -1
           if (a.buyCount < b.buyCount) return order.inc ? -1 : 1
           return 0
         case "sell":
+          if (a.sellCount === undefined && b.sellCount === undefined) return 0;
+          if (a.sellCount === undefined) return order.inc ? -1 : 1
+          if (b.sellCount === undefined) return order.inc ? 1 : -1
           if (a.sellCount > b.sellCount) return order.inc ? 1 : -1
           if (a.sellCount < b.sellCount) return order.inc ? -1 : 1
+          return 0
+        case "blockNumber":
+          if (a.blockNumber === undefined && b.blockNumber === undefined) return 0;
+          if (a.blockNumber === undefined) return order.inc ? -1 : 1
+          if (b.blockNumber === undefined) return order.inc ? 1 : -1
+          if (a.blockNumber > b.blockNumber) return order.inc ? 1 : -1
+          if (a.blockNumber < b.blockNumber) return order.inc ? -1 : 1
           return 0
         default:
           return 0
@@ -221,12 +245,12 @@ const Home = () => {
                 <th scope="col">Owner Address</th>
                 <th scope="col">Token Address</th>
                 <th scope="col">Pair Address</th>
-                <th scope="col" onClick={() => dispatch(SET_ORDER({status: "created_at", inc: 0}))}>Created_at</th>
-                <th scope="col" onClick={() => dispatch(SET_ORDER({status: "updated_at", inc: 0}))}>Updated_at</th>
-                <th scope="col" onClick={() => dispatch(SET_ORDER({status: "sniped", inc: 0}))}>Sniped</th>
-                <th scope="col" onClick={() => dispatch(SET_ORDER({status: "buy", inc: 0}))}>Buy</th>
-                <th scope="col" onClick={() => dispatch(SET_ORDER({status: "sell", inc: 0}))}>Sell</th>
-                <th scope="col">Block Number</th>
+                <th className='sortTh' scope="col" onClick={() => dispatch(SET_ORDER({status: "created_at", inc: 0}))}>Created_at <FontAwesomeIcon icon={faSort} /></th>
+                <th className='sortTh' scope="col" onClick={() => dispatch(SET_ORDER({status: "updated_at", inc: 0}))}>Updated_at <FontAwesomeIcon icon={faSort} /></th>
+                <th className='sortTh' scope="col" onClick={() => dispatch(SET_ORDER({status: "sniped", inc: 0}))}>Sniped <FontAwesomeIcon icon={faSort} /></th>
+                <th className='sortTh' scope="col" onClick={() => dispatch(SET_ORDER({status: "buy", inc: 0}))}>Buy <FontAwesomeIcon icon={faSort} /></th>
+                <th className='sortTh' scope="col" onClick={() => dispatch(SET_ORDER({status: "sell", inc: 0}))}>Sell <FontAwesomeIcon icon={faSort} /></th>
+                <th className='sortTh' scope="col" onClick={() => dispatch(SET_ORDER({status: "blockNumber", inc: 0}))}>BlockNumber <FontAwesomeIcon icon={faSort} /></th>
               </tr>
             </thead>
             <tbody>
@@ -306,22 +330,25 @@ const Home = () => {
             padding: 1vw;
             margin: 0;
           }
-          th:hover {
-            cursor: pointer;
-            background-color: grey;
+          th {
+            padding: 1vw 0;
+            &.sortTh:hover {
+              cursor: pointer;
+              background-color: grey;      
+            } 
           }
           .search-bar {
             text-align: center;
-          }
-          .search-bar .ant-input-group-wrapper {
-            width: 50%
-          }
-          .search-bar .ant-input-affix-wrapper-lg {
-            background-color: black;
-            color: white;
-          }
-          .search-bar input::placeholder {
-            color: #1677ff;
+            .ant-input-group-wrapper {
+              width: 50%
+            }
+            .ant-input-affix-wrapper-lg {
+              background-color: black;
+              color: white;
+            }
+            input::placeholder {
+              color: #1677ff;
+            }
           }
           .token-tr:hover {
             cursor: pointer;
