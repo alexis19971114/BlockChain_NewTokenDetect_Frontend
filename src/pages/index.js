@@ -3,35 +3,29 @@ import styles from '@/styles/Home.module.css'
 import { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch} from 'react-redux'
 import { useRouter } from 'next/router';
-import { SET_WORDS, SET_CONTRACTS, SET_ORDER } from '../../redux/reducers/sniperSlice'
+import { SET_WORDS, SET_CONTRACTS, SET_ORDER, SET_LOADING } from '../../redux/reducers/sniperSlice'
 import { socket } from './socket'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort } from '@fortawesome/free-solid-svg-icons';
+import Link from 'next/link';
 import { Tooltip, notification, Input } from "antd";
+import Loading from './components/loading'
+
 const { Search } = Input;
 
 import Clock from './components/clock';
 import { convertTimezone } from './utils/timezone';
 
-// function DisplayName(){
-//   const { name } = useSelector((state) => state.sniper)
-
-//   return (
-//     <h1> I am {name} !!</h1> 
-//   ) 
-// }
-
-
 const Home = () => {
 
-  const { words, contracts, order } = useSelector((state) => state.sniper)
-  const dispatch                    = useDispatch()
+  const { words, contracts, order, loading }  = useSelector((state) => state.sniper)
+  const dispatch                              = useDispatch()
 
-  const router                      = useRouter()
+  const router                                = useRouter()
 
-  const [tokens, setTokens]         = useState([''])
+  const [tokens, setTokens]                   = useState([''])
   
-  // const inputName = useRef()
+
   let flag        = false
 
   useEffect(() => {
@@ -45,12 +39,12 @@ const Home = () => {
   useEffect(() => {
     if (flag) return
     flag = true
-
+      
     socket.on('clientConnected', (data) => {
       console.log(data)
       let { contracts, time } = data
       dispatch(SET_WORDS(""))
-      dispatch(SET_CONTRACTS(contracts))
+      dispatch(SET_CONTRACTS(contracts))  
     })
     socket.on('newContractCreated', (data) => {
       let { token, contracts } = data
@@ -68,9 +62,10 @@ const Home = () => {
       openNotification("Swap Enabled", `The first sniper attack is done to: ${token.address}`, "warning")
     })
     socket.on('sniperAttack', (data) => {
-      let { token, contracts } = data    
+      let { token, contracts } = data
       dispatch(SET_CONTRACTS(contracts))
       openNotification("Continuous Sniper Attack!!!", `The several sniper attacks are happening to: ${token.address}`, "error")
+      dispatch(SET_WORDS(token.pair))
     })
 
   }, [flag])
@@ -190,11 +185,6 @@ const Home = () => {
     setTokens(orderContracts)
   }
 
-  // function submitName() {
-  //   console.log(inputName.current.value)
-  //   dispatch(SET_NAME(inputName.current.value))
-  // }
-
   const onChange = (e) => {
     dispatch(SET_WORDS(e.target.value))
     getTokens(contracts, e.target.value, order)
@@ -204,22 +194,28 @@ const Home = () => {
     navigator.clipboard.writeText(value)
   }
 
-  const isThisCopyBtn = (list) => {
+  const isThisBtn = (list) => {
     for(const item of list) {
       if (item == "copy-btn") return true;
+      if (item == "to-etherscan") return true;
     }
     return false;
   }
 
   const tokenClicked = (e, address) => {
-    if(isThisCopyBtn(e.target.classList)) return;
+    if(isThisBtn(e.target.classList)) return;
     console.log("token clicked", address)
     router.push('/token-page?address=' + address);  
+  }
+
+  const getLinkUrl = (address) => {
+    return 'https://etherscan.io/address/' + address
   }
 
   return (
     <>
       <main className={styles.main}>  
+        { loading && <Loading/> }
         <div className='d-flex my-5 w-100'>
           <div className='ms-5 clock'>
             {/* <Clock/>      */}
@@ -234,7 +230,27 @@ const Home = () => {
               enterButton
             />
           </div>    
-        
+          <Link className='mx-1 d-flex align-items-center' href="https://etherscan.io/address/0xea7be26ca20e55d4783ffe0085cc604b996749e5">
+            Etherscan
+          </Link>
+          <Link className='mx-1 d-flex align-items-center' href="https://coinmarketcap.com/currencies/dextools/">
+            Coin Market
+          </Link>
+          <Link className='mx-1 d-flex align-items-center' href="https://www.coingecko.com/en/coins/dextools">
+            Coin Gekco
+          </Link>
+          <Link className='mx-1 d-flex align-items-center' href="https://www.coinbase.com/">
+            Coinbase
+          </Link>
+          <Link className='mx-1 d-flex align-items-center' href="https://bitcoin.org/">
+            Bitcoin
+          </Link>
+          <Link className='mx-1 d-flex align-items-center' href="https://www.blockchain.com/">
+            Blockchain
+          </Link>
+          <Link className='mx-1 d-flex align-items-center' href="https://uniswap.org/">
+            Uniswap
+          </Link>
         </div>
         <div className='sniper-table'>
           <table className="table-dark m-3">
@@ -263,7 +279,9 @@ const Home = () => {
                     <td>
                       {
                         token.owner && <div className='d-flex justify-content-between align-items-center'>
-                          <p>{token.owner.toLowerCase().slice(0, 8) + "..." + token.owner.toLowerCase().slice(-6)}</p>
+                          <Link className='to-etherscan' href={getLinkUrl(token.owner.toLowerCase())}>
+                            {token.owner.toLowerCase().slice(0, 8) + "..." + token.owner.toLowerCase().slice(-6)}
+                          </Link> 
                           <Tooltip placement="top" title={"Copied:" + token.owner.toLowerCase()} trigger={"click"}>
                             <button className='copy-btn btn btn-dark ms-2' onClick={(e) => copyBtnClicked(e, token.owner.toLowerCase())}>C</button>
                           </Tooltip>
@@ -273,7 +291,9 @@ const Home = () => {
                     <td>
                       {
                         token.address && <div className='d-flex justify-content-between align-items-center'>
-                          <p>{token.address.toLowerCase().slice(0, 8) + "..." + token.address.toLowerCase().slice(-6)}</p>
+                          <Link className='to-etherscan' href={getLinkUrl(token.address.toLowerCase())}>
+                            {token.address.toLowerCase().slice(0, 8) + "..." + token.address.toLowerCase().slice(-6)}
+                          </Link> 
                           <Tooltip placement="top" title={"Copied:" + token.address.toLowerCase()} trigger={"click"}>
                             <button className='copy-btn btn btn-dark ms-2' onClick={(e) => copyBtnClicked(e, token.address.toLowerCase())}>C</button>
                           </Tooltip>
@@ -283,7 +303,9 @@ const Home = () => {
                     <td>
                       {
                         token.pair && <div className='d-flex justify-content-between align-items-center'>
-                          <p>{token.pair.toLowerCase().slice(0, 8) + "..." + token.pair.toLowerCase().slice(-6)}</p>
+                          <Link className='to-etherscan' href={getLinkUrl(token.address.toLowerCase())}>
+                            {token.pair.toLowerCase().slice(0, 8) + "..." + token.pair.toLowerCase().slice(-6)}
+                          </Link>
                           <Tooltip placement="top" title={"Copied:" + token.pair.toLowerCase()} trigger={"click"}>
                             <button className='copy-btn btn btn-dark ms-2' onClick={(e) => copyBtnClicked(e, token.pair.toLowerCase())}>C</button>
                           </Tooltip>
@@ -331,10 +353,10 @@ const Home = () => {
             margin: 0;
           }
           th {
-            padding: 1vw 0;
+            padding: 1vw 0.5vw;
             &.sortTh:hover {
               cursor: pointer;
-              background-color: grey;      
+              background-color: #181818;      
             } 
           }
           .search-bar {
@@ -352,11 +374,19 @@ const Home = () => {
           }
           .token-tr:hover {
             cursor: pointer;
-            background-color: grey;
+            background-color: #181818;
           }
           .clock {
             width: 200px;
             max-width: 200px;
+          }
+          .to-etherscan {
+            color: #1677ff;
+            padding: 1vw 0;
+            text-decoration: none;
+            &:hover {
+              text-decoration: underline;
+            }
           }
         `}
         </style>
