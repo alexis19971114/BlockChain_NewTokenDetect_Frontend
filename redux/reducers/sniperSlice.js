@@ -6,7 +6,7 @@ const sniperSlice = createSlice({
         words: '',
         contracts: [],
         order: {
-            status: "created_at",
+            status: "createdat",
             inc: 0
         },
         order2: {
@@ -14,6 +14,12 @@ const sniperSlice = createSlice({
             inc: 1
         },
         loading: false,
+        check: {
+            sniped: false,
+            unsniped: false,
+            nonce: false,
+            profitable: false,
+        },
     },  
     reducers: {
         SET_WORDS: (state, action) => {
@@ -44,8 +50,19 @@ const sniperSlice = createSlice({
         SET_LOADING: (state, action) => {
             state.loading = action.payload
         },
+        SET_CHECK: (state, action) => {
+            for (let key in action.payload) {
+                state.check = {
+                    sniped: false,
+                    unsniped: false,
+                    nonce: false,
+                    profitable: false,
+                    [key]: action.payload[key]
+                }
+            }
+        }
 }})
 
-export const { SET_WORDS, SET_CONTRACTS, SET_ORDER, SET_ORDER2, SET_LOADING } = sniperSlice.actions;
+export const { SET_WORDS, SET_CONTRACTS, SET_ORDER, SET_ORDER2, SET_LOADING, SET_CHECK } = sniperSlice.actions;
 export default sniperSlice.reducer;
 

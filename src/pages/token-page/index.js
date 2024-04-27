@@ -9,6 +9,8 @@ import { faSort, faShare } from '@fortawesome/free-solid-svg-icons';
 import { SET_ORDER2, SET_LOADING } from '../../../redux/reducers/sniperSlice'
 import Loading from '../components/loading'
 import Link from 'next/link';
+import { SNIPERS } from '../utils/contants';
+import { URLS } from '../utils/contants';
 
 const newPage = () => {
   const router = useRouter()
@@ -22,12 +24,6 @@ const newPage = () => {
   const [sniperTx, setSniperTx]     = useState(null);
   const [sniperTxs, setSniperTxs]   = useState([]);
   const [tab, setTab]               = useState("table");
-
-  const SNIPERS = {
-    BANANA_GUN: "0x3328F7f4A1D1C57c35df56bBf0c9dCAFCA309C49".toLocaleLowerCase(),
-    UNIV2_ROUTER: "0x7a250d5630b4cf539739df2c5dacb4c659f2488d".toLocaleLowerCase(),
-    MAESTRO: "0x80a64c6D7f12C47B7c66c5B4E20E72bc1FCd5d9e".toLocaleLowerCase()
-  }
 
   useEffect( () => {
     let orderTxs = sortTxs(sniperTxs, order2)
@@ -85,7 +81,7 @@ const newPage = () => {
     const fetchApiData = async (address) => {
       try {
         dispatch(SET_LOADING(true))
-        const result = await axios.get(`http://135.181.0.186:83/api/v1/contractInfo/?address=${address}`)
+        const result = await axios.get(`${URLS.api}/?address=${address}`)
         setData(result.data.data);
         setSniperTx(result.data.sniperTxs);
         dispatch(SET_LOADING(false))
@@ -105,21 +101,21 @@ const newPage = () => {
   const getAddress = (value) => {
     switch(value) {
       case "bananagun":
-        value = "0x3328F7f4A1D1C57c35df56bBf0c9dCAFCA309C49".toLocaleLowerCase()
+        value = SNIPERS.BANANA_GUN
         break;
       case "uniswapv2router":
-        value = "0x7a250d5630b4cf539739df2c5dacb4c659f2488d".toLocaleLowerCase()
+        value = SNIPERS.UNIV2_ROUTER
         break;
       case "maestro":
-        value = "0x80a64c6D7f12C47B7c66c5B4E20E72bc1FCd5d9e".toLocaleLowerCase()
+        value = SNIPERS.MAESTRO
         break;
     }
     return value;
   }
 
   const getLinkUrl = (address, type="") => {
-    if(type == "tx") return 'https://etherscan.io/tx/' + address
-    return 'https://etherscan.io/address/' + getAddress(address)
+    if(type == "tx") return `${URLS.etherscan}/tx/${address}`
+    return `${URLS.etherscan}/address/${getAddress(address)}`
   }
 
   const tabClick = (tab) => {
@@ -179,6 +175,20 @@ const newPage = () => {
                             <Link className='to-etherscan' href={getLinkUrl(data.address.toLowerCase())}>
                               {data.address}
                             </Link>
+                            <Tooltip placement="top" title={"Copied:" + data.address.toLowerCase()} trigger={"click"}>
+                              <button className='copy-btn btn btn-dark ms-2' onClick={() => copyBtnClicked(data.address.toLowerCase())}>C</button>
+                            </Tooltip>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Pair</td>
+                          <td>
+                            <Link className='to-etherscan' href={getLinkUrl(data.pair.toLowerCase())}>
+                              {data.pair}
+                            </Link>
+                            <Tooltip placement="top" title={"Copied:" + data.pair.toLowerCase()} trigger={"click"}>
+                              <button className='copy-btn btn btn-dark ms-2' onClick={() => copyBtnClicked(data.pair.toLowerCase())}>C</button>
+                            </Tooltip>
                           </td>
                         </tr>
                         <tr>
@@ -195,6 +205,9 @@ const newPage = () => {
                             <Link className='to-etherscan' href={getLinkUrl(data.owner.toLowerCase())}>
                               {data.owner}
                             </Link>
+                            <Tooltip placement="top" title={"Copied:" + data.owner.toLowerCase()} trigger={"click"}>
+                              <button className='copy-btn btn btn-dark ms-2' onClick={() => copyBtnClicked(data.owner.toLowerCase())}>C</button>
+                            </Tooltip>
                           </td>
                         </tr>
                         <tr>
@@ -226,19 +239,14 @@ const newPage = () => {
                           <td>{convertTimezone(data.updatedAt)}</td>
                         </tr>
                         <tr>
-                          <td>Pair</td>
-                          <td>
-                            <Link className='to-etherscan' href={getLinkUrl(data.pair.toLowerCase())}>
-                              {data.pair}
-                            </Link>
-                          </td>
-                        </tr>
-                        <tr>
                           <td>Pair Token</td>
                           <td>
                             <Link className='to-etherscan' href={getLinkUrl(data.pairToken.toLowerCase())}>
                               {data.pairToken}
                             </Link>
+                            <Tooltip placement="top" title={"Copied:" + data.pairToken.toLowerCase()} trigger={"click"}>
+                              <button className='copy-btn btn btn-dark ms-2' onClick={() => copyBtnClicked(data.pairToken.toLowerCase())}>C</button>
+                            </Tooltip>
                           </td>
                         </tr>
                         <tr>
@@ -256,6 +264,10 @@ const newPage = () => {
                         <tr>
                           <td>Sniper Attack(Sell)</td>
                           <td>{data.firstBlockSellCount}</td>
+                        </tr>
+                        <tr>
+                          <td>Nonce Attack(Buy)</td>
+                          <td>{data.nonceCount}</td>
                         </tr>
                         <tr>
                           <td>Sniper Block</td>

@@ -1,5 +1,5 @@
 export const convertTimezone = (date) => {
-  let deviation     = 54800000
+  let deviation     = 54656000
   let serverDate    = Date.parse(date)
   let currentDate   = new Date(serverDate + deviation)
 
